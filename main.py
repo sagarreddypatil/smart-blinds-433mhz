@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-rtl_sdr -f 433920000 -s 2000000 -g 40 - | python3 blind_live.py
+rtl_sdr -f 433920000 -s 250000 -g 40 - | python3 blind_live.py
 """
 
 import sys
 import numpy as np
 
 THRESHOLD = 50
-SAMPLE_RATE = int(2e6)
+SAMPLE_RATE = int(2.5e5)
 
 
 def decode_frame(edges, dirs):
