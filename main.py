@@ -38,7 +38,7 @@ def decode_frame(edges, dirs):
     b = [int("".join(bits[i : i + 8]), 2) for i in range(0, 64, 8)]
     chk_ok = ((sum(b[1:7]) + 0x2B) & 0xFF) == b[7]
 
-    cmd_names = {0x01: "PAUSE", 0x02: "UP", 0x04: "DOWN"}
+    cmd_names = {0x01: "PAUSE", 0x02: "UP", 0x04: "DOWN", 0x08: "PAIR"}
     return {
         "cmd": cmd_names.get(b[1], f"0x{b[1]:02X}"),
         "blind_id": b[4] & 0x0F,
