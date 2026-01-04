@@ -7,3 +7,5 @@
 
 src/config.h
 src/embedded_files.h
+
+compile_commands.json
