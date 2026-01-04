@@ -5,12 +5,11 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-static constexpr u8 kDataPin = 4;
-Blinds433 blinds(kDataPin, 0xF1331);
+Blinds433 blinds(0xF1331);
 
 void setup() {
   Serial.begin(9600);
-  pinMode(kDataPin, OUTPUT);
+  init_blinds_pin();
 
   WiFi.begin(kWifiSsid, kWifiPassword);
   while (!WiFi.isConnected()) {

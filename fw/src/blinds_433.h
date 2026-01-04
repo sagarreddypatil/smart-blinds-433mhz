@@ -8,11 +8,18 @@ static constexpr u32 kHalfBitUs = 640;
 static constexpr u32 kPreambleUs = 6800;
 static constexpr u32 kFrameGapUs = 25000;
 
+static constexpr u32 kPin = 4;
+
+static void init_blinds_pin() {
+  pinMode(kPin, OUTPUT);
+  digitalWrite(kPin, LOW);
+}
+
 class Blinds433 {
 public:
-  Blinds433(u8 tx_pin, u32 remote) : pin(tx_pin), remote_id(remote) {
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
+  Blinds433(u32 remote) : remote_id(remote) {
+    pinMode(kPin, OUTPUT);
+    digitalWrite(kPin, LOW);
 
     for (u32 i = 0; i < 16; ++i) {
       counters[i] = 0x0410;
@@ -49,14 +56,14 @@ public:
 private:
   void send_bit(u8 b) {
     if (b) { // 1 = LOW-HIGH
-      digitalWrite(pin, LOW);
+      digitalWrite(kPin, LOW);
       delayMicroseconds(kHalfBitUs);
-      digitalWrite(pin, HIGH);
+      digitalWrite(kPin, HIGH);
       delayMicroseconds(kHalfBitUs);
     } else { // 0 = HIGH-LOW
-      digitalWrite(pin, HIGH);
+      digitalWrite(kPin, HIGH);
       delayMicroseconds(kHalfBitUs);
-      digitalWrite(pin, LOW);
+      digitalWrite(kPin, LOW);
       delayMicroseconds(kHalfBitUs);
     }
   }
@@ -64,27 +71,25 @@ private:
   void send_frame(u8 *data, const u32 frame_num) {
     const u32 sync_count = frame_num == 0 ? 434 : 59;
     for (u32 i = 0; i < sync_count; ++i) {
-      digitalWrite(pin, HIGH);
+      digitalWrite(kPin, HIGH);
       delayMicroseconds(kSyncHalfUs);
-      digitalWrite(pin, LOW);
+      digitalWrite(kPin, LOW);
       delayMicroseconds(kSyncHalfUs);
     }
 
-    digitalWrite(pin, HIGH);
+    digitalWrite(kPin, HIGH);
     delayMicroseconds(kPreambleUs);
 
-    digitalWrite(pin, LOW);
+    digitalWrite(kPin, LOW);
     delayMicroseconds(kHalfBitUs);
 
     for (int i = 0; i < 8; i++)
       for (int j = 7; j >= 0; j--)
         send_bit((data[i] >> j) & 1);
 
-    digitalWrite(pin, LOW);
+    digitalWrite(kPin, LOW);
   }
 
-  u8 pin;
   u32 remote_id;
-
   u16 counters[16];
 };
