@@ -1,0 +1,15 @@
+CompileFlags:
+  Add:
+    - --target=arm-none-eabi
+    - -nostdinc++
+    - -isystem/Users/sagar/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include/c++/10.3.0
+    - -isystem/Users/sagar/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include/c++/10.3.0/xtensa-lx106-elf
+    - -isystem/Users/sagar/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include
+    - -isystem/Users/sagar/.platformio/packages/toolchain-xtensa/lib/gcc/xtensa-lx106-elf/10.3.0/include
+    - -isystem/Users/sagar/.platformio/packages/toolchain-xtensa/lib/gcc/xtensa-lx106-elf/10.3.0/include-fixed
+  Remove:
+    - -mlongcalls
+    - -mtext-section-literals
+    - -free
+    - -fipa-pta
+    - -falign-functions=4

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ID List</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px 12px;
+        text-align: left;
+      }
+      th {
+        background: #f5f5f5;
+      }
+      .delete-btn {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 4px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+      .delete-btn:hover {
+        background: #c0392b;
+      }
+      form {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 14px;
+      }
+      input {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+      }
+      #hex-id {
+        width: 80px;
+      }
+      button[type="submit"] {
+        padding: 6px 16px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      button[type="submit"]:hover {
+        background: #2980b9;
+      }
+      .error {
+        color: #e74c3c;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>ID List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>ID</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="list-body"></tbody>
+    </table>
+
+    <form id="add-form">
+      <label>
+        Name
+        <input type="text" id="name" required />
+      </label>
+      <label>
+        Hex ID
+        <input type="text" id="hex-id" placeholder="ABCD" required />
+      </label>
+      <button type="submit">Insert</button>
+    </form>
+    <div id="error" class="error"></div>
+
+    <script>
+      const listBody = document.getElementById("list-body");
+      const form = document.getElementById("add-form");
+      const errorDiv = document.getElementById("error");
+
+      async function loadList() {
+        try {
+          const res = await fetch("/list");
+          const data = await res.json();
+          listBody.replaceChildren();
+          for (const [name, id] of data) {
+            const tr = document.createElement("tr");
+
+            const nameTd = document.createElement("td");
+            nameTd.textContent = name;
+
+            const idTd = document.createElement("td");
+            idTd.textContent = id;
+
+            const btnTd = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.className = "delete-btn";
+            btn.textContent = "Delete";
+            btn.dataset.name = name;
+            btnTd.appendChild(btn);
+
+            tr.append(nameTd, idTd, btnTd);
+            listBody.appendChild(tr);
+          }
+        } catch (e) {
+          errorDiv.textContent = "Failed to load list";
+        }
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorDiv.textContent = "";
+        const name = document.getElementById("name").value;
+        const hexId = document.getElementById("hex-id").value;
+
+        try {
+          const res = await fetch("/list", {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: `${name},${hexId}`,
+          });
+          if (!res.ok) {
+            const err = await res.text();
+            errorDiv.textContent = err;
+            return;
+          }
+          form.reset();
+          loadList();
+        } catch (e) {
+          errorDiv.textContent = "Request failed";
+        }
+      });
+
+      listBody.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("delete-btn")) {
+          const name = e.target.dataset.name;
+          try {
+            await fetch("/list", {
+              method: "DELETE",
+              headers: { "Content-Type": "text/plain" },
+              body: name,
+            });
+            loadList();
+          } catch (e) {
+            errorDiv.textContent = "Delete failed";
+          }
+        }
+      });
+
+      loadList();
+    </script>
+  </body>
+</html>
