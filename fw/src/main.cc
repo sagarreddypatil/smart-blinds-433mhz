@@ -1,3 +1,4 @@
+#include "blinds_433.h"
 #include "config.h"
 #include "embedded_files.h"
 #include "util.h"
@@ -163,24 +164,42 @@ void handle_list_delete() {
   server.send(200, "text/plain", "ok");
 }
 
+static constexpr u8 kDataPin = 4;
+Blinds433 blinds(kDataPin, 0xF1331);
+
 void setup() {
   Serial.begin(9600);
-  LittleFS.begin();
+  pinMode(kDataPin, OUTPUT);
+  Serial.println("Initialized.");
 
-  WiFi.begin(kWifiSsid, kWifiPassword);
-  while (!WiFi.isConnected()) {
-    Serial.println("Connecting...");
-    delay(500);
-  }
+  // Serial.begin(9600);
+  // LittleFS.begin();
 
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());
+  // WiFi.begin(kWifiSsid, kWifiPassword);
+  // while (!WiFi.isConnected()) {
+  //   Serial.println("Connecting...");
+  //   delay(500);
+  // }
 
-  server.on("/", handle_root);
-  server.on("/list", HTTP_GET, handle_list_get);
-  server.on("/list", HTTP_POST, handle_list_post);
-  server.on("/list", HTTP_DELETE, handle_list_delete);
-  server.begin();
+  // Serial.print("IP: ");
+  // Serial.println(WiFi.localIP());
+
+  // server.on("/", handle_root);
+  // server.on("/list", HTTP_GET, handle_list_get);
+  // server.on("/list", HTTP_POST, handle_list_post);
+  // server.on("/list", HTTP_DELETE, handle_list_delete);
+  // server.begin();
 }
 
-void loop() { server.handleClient(); }
+void loop() {
+  Serial.println("sending blinds down");
+  blinds.all_down();
+  delay(2000);
+  // Serial.println("pausing all blinds");
+  // blinds.all_pause();
+  // delay(1000);
+  // Serial.println("sending all blinds up");
+  // blinds.all_up();
+  // delay(1000);
+  // server.handleClient();
+}

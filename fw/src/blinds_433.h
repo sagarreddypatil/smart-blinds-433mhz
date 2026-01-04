@@ -3,6 +3,7 @@
 #include "util.h"
 #include <Arduino.h>
 
+static constexpr u32 kSyncHalfUs = 295;
 static constexpr u32 kHalfBitUs = 640;
 static constexpr u32 kPreambleUs = 6800;
 static constexpr u32 kFrameGapUs = 25000;
@@ -12,6 +13,10 @@ public:
   Blinds433(u8 tx_pin, u32 remote) : pin(tx_pin), remote_id(remote) {
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
+
+    for (u32 i = 0; i < 16; ++i) {
+      counters[i] = 0x0410;
+    }
   }
 
   void send(u8 cmd, u8 blind_id, i32 repeats = 6) {
@@ -23,7 +28,7 @@ public:
     d[3] = counters[blind_id] & 0xFF;
     ++counters[blind_id];
 
-    d[4] = ((remote_id >> 16) & 0xF0) | (blind_id & 0x0F);
+    d[4] = ((remote_id >> 12) & 0xF0) | (blind_id & 0x0F);
     d[5] = (remote_id >> 8) & 0xFF;
     d[6] = remote_id & 0xFF;
 
@@ -56,16 +61,20 @@ private:
     }
   }
 
-  void send_frame(u8 *data, const u32 i) {
-    const u32 sync_count = i == 0 ? 400 : 64;
+  void send_frame(u8 *data, const u32 frame_num) {
+    const u32 sync_count = frame_num == 0 ? 434 : 59;
     for (u32 i = 0; i < sync_count; ++i) {
       digitalWrite(pin, HIGH);
-      delayMicroseconds(kHalfBitUs / 2);
+      delayMicroseconds(kSyncHalfUs);
       digitalWrite(pin, LOW);
-      delayMicroseconds(kHalfBitUs / 2);
+      delayMicroseconds(kSyncHalfUs);
     }
+
     digitalWrite(pin, HIGH);
     delayMicroseconds(kPreambleUs);
+
+    digitalWrite(pin, LOW);
+    delayMicroseconds(kHalfBitUs);
 
     for (int i = 0; i < 8; i++)
       for (int j = 7; j >= 0; j--)
@@ -77,5 +86,5 @@ private:
   u8 pin;
   u32 remote_id;
 
-  u16 counters[16]{};
+  u16 counters[16];
 };
